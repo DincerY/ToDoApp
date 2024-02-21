@@ -1,0 +1,50 @@
+﻿@page "/fetchdata"
+@inject HttpClient Http
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    foreach (var weatherForecast in forecasts)
+    {
+        <BSCard CardType="CardType.Card" style="width: 14;">
+    <BSCard CardType="CardType.Body">
+        <BSCard CardType="CardType.Title" style ="font-weight:bold">@weatherForecast.Date</BSCard>
+        <BSCard CardType="CardType.Text">
+            @weatherForecast.Summary
+        </BSCard>
+        <BSButton Color="BSColor.Success">Tamlandı İşaretle</BSButton>
+            <BSButton Color="BSColor.Danger">Görevi sil</BSButton>
+    </BSCard>
+</BSCard>
+    }
+   
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7276/sample-data/weather.json");
+    }
+
+    public class WeatherForecast
+    {
+        public DateOnly Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string? Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+}

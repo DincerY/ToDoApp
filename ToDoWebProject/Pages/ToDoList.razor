@@ -1,0 +1,69 @@
+﻿@page "/todolist"
+@using Newtonsoft.Json
+@inject HttpClient Http
+
+<h3>Yapılacak Görevlerim</h3>
+
+@if (_todos == null)
+{
+    <p>Todo listesi boş</p>
+}
+
+@foreach (var todo in _todos)
+{
+    <BSCard CardType="CardType.Card" style="width: 14;">
+        <BSCard CardType="CardType.Body">
+            <BSCard CardType="CardType.Title" style="font-weight:bold">@todo.Id</BSCard>
+            @if (!todo.Completed)
+            {
+                <BSCard CardType="CardType.Text">
+                    @todo.Title
+                </BSCard>
+            }
+            else
+            {
+                <BSCard CardType="CardType.Text" style="text-decoration: line-through;">
+                    @todo.Title
+                </BSCard>
+            }
+            @if (!todo.Completed)
+            {
+                <BSButton @onclick="()=>MakeIsComplete(todo.Id)" Color="BSColor.Success">Tamlandı İşaretle</BSButton>
+            }
+            <BSButton @onclick="()=>DeleteItem(todo.Id)" Color="BSColor.Danger">Görevi sil</BSButton>
+        </BSCard>
+    </BSCard>
+}
+
+
+
+@code {
+    private List<Todo>? _todos;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        //_todos = await Http.GetFromJsonAsync<List<Todo>>("https://jsonplaceholder.typicode.com/todos/");
+        
+        
+        var stringResult = await Http.GetStringAsync("https://localhost:7106/api/Todos");
+
+        _todos = JsonConvert.DeserializeObject<List<Todo>>(stringResult);
+
+
+    }
+
+    public void MakeIsComplete(int todoId)
+    {
+        var todo = _todos.SingleOrDefault(t => t.Id == todoId);
+        todo.Completed = true;
+        StateHasChanged();
+    }
+
+    public void DeleteItem(int todoId)
+    {
+        var todo = _todos.SingleOrDefault(t => t.Id == todoId);
+        _todos.Remove(todo);
+        StateHasChanged();
+    }
+}
