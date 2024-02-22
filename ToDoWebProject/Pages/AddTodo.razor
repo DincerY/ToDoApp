@@ -1,0 +1,88 @@
+﻿@page "/addtodo"
+@using System.ComponentModel.DataAnnotations
+@using System.Formats.Asn1
+@using System.Net.Mime
+@using System.Text
+@using Newtonsoft.Json
+@inject HttpClient Http
+
+<PageTitle>Add Todo</PageTitle>
+
+<h1 style="text-align:center">Görev Ekle</h1>
+<div style=" 
+        width: 100%;
+        border: 3px solid #3a0647;
+        padding: 20px;
+        margin: 20px auto;">
+    
+    <BSForm Model="todoModal" IsRow="true" Gutters="Gutters.Medium" OnSubmit="OnSubmit" OnReset="OnReset">
+
+        <DataAnnotationsValidator />
+        <BSCol Position="Position.Relative" ColumnMedium="12">
+            @_message
+            <BSValidationSummary />
+        </BSCol>
+        <div class="mb-3">
+            <BSCol Position="Position.Relative" ColumnMedium="4">
+                <BSLabel>Kullanıcı Id</BSLabel>
+                <BSInput InputType="InputType.Text" @bind-Value="todoModal.UserId" />
+                <BSFeedback For="@(() => todoModal.UserId)" ValidMessage="Middle name looks good." />
+            </BSCol>
+        </div>
+        <div class="mb-3">
+            <BSCol Position="Position.Relative" ColumnMedium="4">
+                <BSLabel>Yapılacak İş</BSLabel>
+                <BSInput InputType="InputType.Text" @bind-Value="todoModal.Title" />
+                <BSFeedback For="@(() => todoModal.Title)" ValidMessage="Last name looks good." />
+            </BSCol>
+        </div>
+    
+
+        <BSCol Column="12">
+            <BSButton Color="BSColor.Success" IsSubmit="true">İş Ekle</BSButton>
+            <BSButton Color="BSColor.Danger" IsReset="true">Girdileri Sıfırla</BSButton>
+        </BSCol>
+   
+    </BSForm>
+
+</div>
+
+
+
+
+
+@code {
+    public TodoModal todoModal { get; set; } = new TodoModal(){Completed = false};
+    private string _message = "";
+
+    private async Task OnSubmit(EditContext e)
+    {
+        if (e.Validate())
+        {
+            string jsonData = JsonConvert.SerializeObject(todoModal);
+            StringContent content = new StringContent(jsonData, Encoding.UTF8, MediaTypeNames.Application.Json);
+            await Http.PostAsync("/add",content);
+            _message = "Submitted to database";
+
+        }
+    }
+
+    private void OnReset(IBSForm bSForm)
+    {
+        bSForm.Reset();
+    }
+
+ 
+    public class TodoModal
+    {
+        [Required(ErrorMessage = "Lütfen kullanıcı kimliğini giriniz")]
+        public int UserId { get; set; }
+        [Required(ErrorMessage = "Lütfen yapılacak işi giriniz")]
+        public string Title { get; set; }
+        public bool Completed { get; set; }
+    }
+
+
+}
+
+

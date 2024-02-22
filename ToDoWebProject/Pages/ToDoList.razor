@@ -1,39 +1,49 @@
 ﻿@page "/todolist"
 @using Newtonsoft.Json
+@using System.Net
 @inject HttpClient Http
 
-<h3>Yapılacak Görevlerim</h3>
 
 @if (_todos == null)
 {
-    <p>Todo listesi boş</p>
+    <div>
+        <p style="text-align:center;font-size: 40px"><em>Görevler Yükleniyor...</em></p>
+    </div>
+}
+else
+{
+
+    <h3>Yapılacak Görevlerim</h3>
+    @foreach (var todo in _todos)
+    {
+        <BSCard CardType="CardType.Card" style="width: 14;">
+            <BSCard CardType="CardType.Body">
+                <BSCard CardType="CardType.Title" style="font-weight:bold">@todo.Id</BSCard>
+                @if (!todo.Completed)
+                {
+                    <BSCard CardType="CardType.Text">
+                        @todo.Title
+                    </BSCard>
+                }
+                else
+                {
+                    <BSCard CardType="CardType.Text" style="text-decoration: line-through;">
+                        @todo.Title
+                    </BSCard>
+                }
+                @if (!todo.Completed)
+                {
+                    <BSButton @onclick="()=>MakeIsComplete(todo.Id)" Color="BSColor.Success">Tamamlandı İşaretle</BSButton>
+                }
+                <BSButton @onclick="()=>DeleteItem(todo.Id)" Color="BSColor.Danger">Görevi sil</BSButton>
+            </BSCard>
+        </BSCard>
+    }
+
+
 }
 
-@foreach (var todo in _todos)
-{
-    <BSCard CardType="CardType.Card" style="width: 14;">
-        <BSCard CardType="CardType.Body">
-            <BSCard CardType="CardType.Title" style="font-weight:bold">@todo.Id</BSCard>
-            @if (!todo.Completed)
-            {
-                <BSCard CardType="CardType.Text">
-                    @todo.Title
-                </BSCard>
-            }
-            else
-            {
-                <BSCard CardType="CardType.Text" style="text-decoration: line-through;">
-                    @todo.Title
-                </BSCard>
-            }
-            @if (!todo.Completed)
-            {
-                <BSButton @onclick="()=>MakeIsComplete(todo.Id)" Color="BSColor.Success">Tamlandı İşaretle</BSButton>
-            }
-            <BSButton @onclick="()=>DeleteItem(todo.Id)" Color="BSColor.Danger">Görevi sil</BSButton>
-        </BSCard>
-    </BSCard>
-}
+
 
 
 
@@ -43,21 +53,21 @@
     protected override async Task OnInitializedAsync()
     {
 
-        //_todos = await Http.GetFromJsonAsync<List<Todo>>("https://jsonplaceholder.typicode.com/todos/");
-        
-        
-        var stringResult = await Http.GetStringAsync("https://localhost:7106/api/Todos");
+        var stringResult = await Http.GetStringAsync("getalltodo");
 
         _todos = JsonConvert.DeserializeObject<List<Todo>>(stringResult);
-
-
     }
 
-    public void MakeIsComplete(int todoId)
+    public async Task MakeIsComplete(int todoId)
     {
-        var todo = _todos.SingleOrDefault(t => t.Id == todoId);
-        todo.Completed = true;
-        StateHasChanged();
+        var stringResult = await Http.GetAsync($"update/{todoId}");
+        if (stringResult.StatusCode == HttpStatusCode.OK)
+        {
+
+            var todo = _todos.SingleOrDefault(t => t.Id == todoId);
+            todo.Completed = true;
+            StateHasChanged();
+        }
     }
 
     public void DeleteItem(int todoId)

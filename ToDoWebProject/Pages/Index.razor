@@ -1,9 +1,30 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Ana Sayfa</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1 style="text-align:center">Merhaba Todo List uygulamamıza hoşgeldin</h1>
 
-Welcome to your new app.
+<div class="nav-scrollable">
+    <nav class="flex-column">
+        <div class="nav-item px-3" style="
+        width: 100%;
+        border: 2px solid #333;
+        padding: 30px;
+        margin: 25px auto;">
+            <NavLink style="text-align : center;font-size:35px;" class="nav-link" href="todolist">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Görevlerimi listele
+            </NavLink>
+        </div>
+        <div class="nav-item px-3" style="
+        width: 100%;
+        border: 2px solid #333;
+        padding: 30px;
+        margin: 25px auto;">
+            <NavLink style="text-align : center;font-size:35px;" class="nav-link" href="addtodo">
+                <span class="oi oi-plus" aria-hidden="true"></span> 
+                Görev Ekle
+            </NavLink>
+        </div>
+    </nav>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />

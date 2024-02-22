@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -18,6 +19,7 @@ public class TodosController : ControllerBase
     }
 
     [HttpGet]
+    [Route("/getalltodo")]
     public async Task<IActionResult> GetAllTodos()
     {
         var todos = await _context.Todos.ToListAsync();
@@ -27,23 +29,71 @@ public class TodosController : ControllerBase
 
     [HttpPost]
     [Route("/add")]
-    public async Task<IActionResult> AddTodo([FromBody]Todo todo)
+    public async Task<IActionResult> AddTodo([FromBody]TodoVM todo)
     {
-        await _context.Todos.AddAsync(todo);
+        Todo addedTodo = new Todo()
+        {
+            UserId = todo.UserId,
+            Title = todo.Title,
+            Completed = todo.Completed
+        };
+        await _context.Todos.AddAsync(addedTodo);
         var result = await _context.SaveChangesAsync();
-        return Ok(result == 1 ? "Eklendi" : "Eklenemedi");
+        if (result == 1)
+        {
+            return Ok("Eklendi");
+        }
+        else
+        {
+            return BadRequest("Eklenemedi");
+        }
     }
 
     [HttpDelete]
-    public async Task<IActionResult> DeleteTodo()
+    [Route("/delete/{id}")]
+    public async Task<IActionResult> DeleteTodo(int id)
     {
-        return Ok();
+        var todo = await _context.Todos.FindAsync(id);
+        _context.Todos.Remove(todo);
+        var result = await _context.SaveChangesAsync();
+        if (result == 1)
+        {
+            return Ok("Silindi");
+        }
+        else
+        {
+            return BadRequest("Silinemedi");
+        }
     }
 
-    [HttpPut]
-    public async Task<IActionResult> UpdateTodo()
+    [HttpGet]
+    [Route("/update/{id}")]
+    public async Task<IActionResult> UpdateTodosComplete(int id)
     {
-        return Ok();
+        var todo = await _context.Todos.FindAsync(id);
+        if (!todo.Completed)
+        {
+            todo.Completed = true;
+        }
+        var result = await _context.SaveChangesAsync();
+        if (result == 1)
+        {
+            return Ok("Güncellendi");
+        }
+        else
+        {
+            return BadRequest("Güncellenemedi");
+        }
     }
 
+}
+
+public class TodoVM
+{
+    [Required]
+    public int UserId { get; set; }
+    [Required]
+    public string Title { get; set; }
+    [Required]
+    public bool Completed { get; set; }
 }
