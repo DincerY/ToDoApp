@@ -1,4 +1,6 @@
 ﻿@page "/fetchdata"
+@using Button = BootstrapBlazor.Components.Button
+@using Toasts = BlazorStrap.Toasts
 @inject HttpClient Http
 
 <PageTitle>Weather forecast</PageTitle>
@@ -6,45 +8,23 @@
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
+<Toasts class="p-3" Messages="messages" Placement="ToastsPlacement.TopRight" />
+@*<Button Color="ButtonColor.Success" @onclick="() => ShowMessage(ToastType.Success,)">Success Toast</Button>*@
 
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    foreach (var weatherForecast in forecasts)
-    {
-        <BSCard CardType="CardType.Card" style="width: 14;">
-    <BSCard CardType="CardType.Body">
-        <BSCard CardType="CardType.Title" style ="font-weight:bold">@weatherForecast.Date</BSCard>
-        <BSCard CardType="CardType.Text">
-            @weatherForecast.Summary
-        </BSCard>
-        <BSButton Color="BSColor.Success">Tamlandı İşaretle</BSButton>
-            <BSButton Color="BSColor.Danger">Görevi sil</BSButton>
-    </BSCard>
-</BSCard>
-    }
-   
-}
 
 @code {
-    private WeatherForecast[]? forecasts;
 
-    protected override async Task OnInitializedAsync()
-    {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7276/sample-data/weather.json");
-    }
 
-    public class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
+    List<ToastMessage> messages = new List<ToastMessage>();
 
-        public int TemperatureC { get; set; }
+    private void ShowMessage(ToastType toastType,string title,string responseMessage) => messages.Add(CreateToastMessage(toastType,title,responseMessage));
 
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
+    private ToastMessage CreateToastMessage(ToastType toastType,string title,string responseMessage)
+        => new ToastMessage
+        {
+            Type = toastType,
+            Title = title,
+            HelpText = $"{DateTime.Now}",
+            Message = responseMessage
+        };
 }

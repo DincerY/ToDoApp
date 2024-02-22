@@ -4,11 +4,15 @@
 @using System.Net.Mime
 @using System.Text
 @using Newtonsoft.Json
+@using Position = BlazorStrap.Position
 @inject HttpClient Http
+@using Toasts = BlazorStrap.Toasts
 
 <PageTitle>Add Todo</PageTitle>
 
 <h1 style="text-align:center">Görev Ekle</h1>
+<Toasts class="p-3" Messages="messages" Placement="ToastsPlacement.TopRight" />
+
 <div style=" 
         width: 100%;
         border: 3px solid #3a0647;
@@ -26,20 +30,20 @@
             <BSCol Position="Position.Relative" ColumnMedium="4">
                 <BSLabel>Kullanıcı Id</BSLabel>
                 <BSInput InputType="InputType.Text" @bind-Value="todoModal.UserId" />
-                <BSFeedback For="@(() => todoModal.UserId)" ValidMessage="Middle name looks good." />
+                <BSFeedback For="@(() => todoModal.UserId)" ValidMessage="" />
             </BSCol>
         </div>
         <div class="mb-3">
             <BSCol Position="Position.Relative" ColumnMedium="4">
                 <BSLabel>Yapılacak İş</BSLabel>
-                <BSInput InputType="InputType.Text" @bind-Value="todoModal.Title" />
-                <BSFeedback For="@(() => todoModal.Title)" ValidMessage="Last name looks good." />
+                <BSInput placeholder="ör:Kitap Okumak" InputType="InputType.Text" @bind-Value="todoModal.Title" />
+                <BSFeedback For="@(() => todoModal.Title)" ValidMessage="" />
             </BSCol>
         </div>
     
 
         <BSCol Column="12">
-            <BSButton Color="BSColor.Success" IsSubmit="true">İş Ekle</BSButton>
+            <BSButton Color="BSColor.Success" IsSubmit="true">Görev Ekle</BSButton>
             <BSButton Color="BSColor.Danger" IsReset="true">Girdileri Sıfırla</BSButton>
         </BSCol>
    
@@ -61,10 +65,12 @@
         {
             string jsonData = JsonConvert.SerializeObject(todoModal);
             StringContent content = new StringContent(jsonData, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await Http.PostAsync("/add",content);
-            _message = "Submitted to database";
-
+            HttpResponseMessage responseMessage = await Http.PostAsync("/add",content);
+            var message = await responseMessage.Content.ReadAsStringAsync();
+            //Ekleme işlemi yaparken bekleme kısımında ekranı dondurup spin koyalım.
+            ShowMessage(responseMessage.IsSuccessStatusCode ? ToastType.Success : ToastType.Danger, "Ürün Ekleme İşlemi", message);
         }
+
     }
 
     private void OnReset(IBSForm bSForm)
@@ -75,12 +81,29 @@
  
     public class TodoModal
     {
+        [Range(1,int.MaxValue,ErrorMessage = "Kullanıcı kimliği sıfır veya negatif bir sayı olmaz")]
         [Required(ErrorMessage = "Lütfen kullanıcı kimliğini giriniz")]
         public int UserId { get; set; }
+
         [Required(ErrorMessage = "Lütfen yapılacak işi giriniz")]
         public string Title { get; set; }
+
         public bool Completed { get; set; }
     }
+
+
+    List<ToastMessage> messages = new List<ToastMessage>();
+
+    private void ShowMessage(ToastType toastType, string title, string responseMessage) => messages.Add(CreateToastMessage(toastType, title, responseMessage));
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string title, string responseMessage)
+        => new ToastMessage
+            {
+                Type = toastType,
+                Title = title,
+                HelpText = $"{DateTime.Now}",
+                Message = responseMessage
+            };
 
 
 }

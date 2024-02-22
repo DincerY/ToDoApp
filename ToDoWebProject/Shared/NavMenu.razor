@@ -1,6 +1,6 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">ToDoWebProject</a>
+        <a class="navbar-brand" href="">ToDo Web</a>
         <button title="Menüyü Genişlet" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -34,7 +34,7 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool collapseNavMenu = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 

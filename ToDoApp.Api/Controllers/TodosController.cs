@@ -41,11 +41,11 @@ public class TodosController : ControllerBase
         var result = await _context.SaveChangesAsync();
         if (result == 1)
         {
-            return Ok("Eklendi");
+            return Ok($"{addedTodo.UserId} Kullanıcı Kimlikli Ürün Eklendi");
         }
         else
         {
-            return BadRequest("Eklenemedi");
+            return BadRequest($"{addedTodo.UserId} Kullanıcı Kimlikli Ürün Eklenemedi");
         }
     }
 
