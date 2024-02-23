@@ -8,7 +8,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient(){BaseAddress = 
-    new Uri("https://localhost:7106/api")});
+    new Uri("https://localhost:7106/api/Todos/")});
 builder.Services.AddBlazorStrap();
 builder.Services.AddBlazorBootstrap();
 

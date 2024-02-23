@@ -2,12 +2,16 @@
 @using Newtonsoft.Json
 @using System.Net
 @inject HttpClient Http
+@inject PreloadService PreloadService
+
+
+<Toasts class="p-3" Messages="messages" Placement="ToastsPlacement.TopRight" />
 
 
 @if (_todos == null)
 {
     <div>
-        <p style="text-align:center;font-size: 40px"><em>Görevler Yükleniyor...</em></p>
+        <p style="text-align:center;font-size: 40px"><em>Şuanlık Görevler Boş</em></p>
     </div>
 }
 else
@@ -39,12 +43,7 @@ else
             </BSCard>
         </BSCard>
     }
-
-
 }
-
-
-
 
 
 @code {
@@ -52,28 +51,66 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        string stringResult = "";
+        PreloadService.Show(SpinnerColor.Light, "Ürünler Getiriliyor...");
 
-        var stringResult = await Http.GetStringAsync("getalltodo");
+        try
+        {
+            stringResult = await Http.GetStringAsync("getalltodo");
+        }
+        catch (Exception exception)
+        {
+            ShowMessage(ToastType.Warning, "Server Hatası", "Yazılan URL de yada server da bir hata mevcut");
+            throw;
+        }
+        finally
+        {
+            PreloadService.Hide();
+        }
+
 
         _todos = JsonConvert.DeserializeObject<List<Todo>>(stringResult);
     }
 
     public async Task MakeIsComplete(int todoId)
     {
-        var stringResult = await Http.GetAsync($"update/{todoId}");
-        if (stringResult.StatusCode == HttpStatusCode.OK)
+        PreloadService.Show(SpinnerColor.Light,"Tamalanıyor...");
+        var responseMessage = await Http.GetAsync($"update/{todoId}");
+        PreloadService.Hide();
+        if (responseMessage.StatusCode == HttpStatusCode.OK)
         {
-
             var todo = _todos.SingleOrDefault(t => t.Id == todoId);
             todo.Completed = true;
             StateHasChanged();
         }
+        ShowMessage(responseMessage.IsSuccessStatusCode ? ToastType.Success : ToastType.Danger, "Görev Tamalama İşlemi", $"{await responseMessage.Content.ReadAsStringAsync()} (Tamamlandı Olarak İşaretlendi)");
     }
 
-    public void DeleteItem(int todoId)
+    public async Task DeleteItem(int todoId)
     {
-        var todo = _todos.SingleOrDefault(t => t.Id == todoId);
-        _todos.Remove(todo);
-        StateHasChanged();
+        PreloadService.Show(SpinnerColor.Light, "Siliniyor...");
+        var responseMessage = await Http.DeleteAsync($"delete/{todoId}");
+        PreloadService.Hide();
+        if (responseMessage.StatusCode == HttpStatusCode.OK)
+        {
+            var todo = _todos.SingleOrDefault(t => t.Id == todoId);
+            _todos.Remove(todo);
+            StateHasChanged();
+        }
+        ShowMessage(responseMessage.IsSuccessStatusCode ? ToastType.Success : ToastType.Danger, "Görev Silme İşlemi", await responseMessage.Content.ReadAsStringAsync());
+
     }
+
+    List<ToastMessage> messages = new List<ToastMessage>();
+
+    private void ShowMessage(ToastType toastType, string title, string responseMessage) => messages.Add(CreateToastMessage(toastType, title, responseMessage));
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string title, string responseMessage)
+        => new ToastMessage
+        {
+            Type = toastType,
+            Title = title,
+            HelpText = $"{DateTime.Now}",
+            Message = responseMessage
+        };
 }

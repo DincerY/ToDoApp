@@ -1,0 +1,2 @@
+Ekleme işlemi yaparken bekleme kısımına spinner koyucam.
+Microsoft identity mekanizması kullanılabilir yani login ekranı kayıt ekranı vs.

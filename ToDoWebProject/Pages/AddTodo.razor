@@ -1,12 +1,14 @@
 ﻿@page "/addtodo"
 @using System.ComponentModel.DataAnnotations
 @using System.Formats.Asn1
+@using System.Net
 @using System.Net.Mime
 @using System.Text
 @using Newtonsoft.Json
 @using Position = BlazorStrap.Position
 @inject HttpClient Http
 @using Toasts = BlazorStrap.Toasts
+@inject PreloadService PreloadService
 
 <PageTitle>Add Todo</PageTitle>
 
@@ -65,10 +67,27 @@
         {
             string jsonData = JsonConvert.SerializeObject(todoModal);
             StringContent content = new StringContent(jsonData, Encoding.UTF8, MediaTypeNames.Application.Json);
-            HttpResponseMessage responseMessage = await Http.PostAsync("/add",content);
+
+            PreloadService.Show(SpinnerColor.Light,"Ürün Ekleniyor...");
+            HttpResponseMessage responseMessage = new HttpResponseMessage();
+            try
+            {
+                responseMessage = await Http.PostAsync("add",content);
+            }
+            catch (Exception exception)
+            {
+                PreloadService.Hide();
+                ShowMessage(ToastType.Warning, "Server Hatası", "Yazılan URL de yada server da bir hata mevcut");
+                throw;
+
+            }
+            finally
+            {
+                PreloadService.Hide();
+            }
             var message = await responseMessage.Content.ReadAsStringAsync();
-            //Ekleme işlemi yaparken bekleme kısımında ekranı dondurup spin koyalım.
-            ShowMessage(responseMessage.IsSuccessStatusCode ? ToastType.Success : ToastType.Danger, "Ürün Ekleme İşlemi", message);
+            ShowMessage(responseMessage.IsSuccessStatusCode ? ToastType.Success : ToastType.Danger, "Görev Ekleme İşlemi", message);
+         
         }
 
     }

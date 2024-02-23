@@ -19,7 +19,7 @@ public class TodosController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/getalltodo")]
+    [Route("getalltodo")]
     public async Task<IActionResult> GetAllTodos()
     {
         var todos = await _context.Todos.ToListAsync();
@@ -28,7 +28,7 @@ public class TodosController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/add")]
+    [Route("add")]
     public async Task<IActionResult> AddTodo([FromBody]TodoVM todo)
     {
         Todo addedTodo = new Todo()
@@ -37,37 +37,48 @@ public class TodosController : ControllerBase
             Title = todo.Title,
             Completed = todo.Completed
         };
+
+        if (await _context.Todos.AnyAsync(t => t.Title == todo.Title))
+        {
+            return BadRequest("Yapılacak iş zaten mevcut");
+        }
+        
+        
         await _context.Todos.AddAsync(addedTodo);
         var result = await _context.SaveChangesAsync();
         if (result == 1)
         {
-            return Ok($"{addedTodo.UserId} Kullanıcı Kimlikli Ürün Eklendi");
+            return Ok($"{addedTodo.UserId} Kullanıcı Kimlikli Görev Eklendi");
         }
         else
         {
-            return BadRequest($"{addedTodo.UserId} Kullanıcı Kimlikli Ürün Eklenemedi");
+            return BadRequest($"{addedTodo.UserId} Kullanıcı Kimlikli Görev Eklenemedi");
         }
     }
 
     [HttpDelete]
-    [Route("/delete/{id}")]
+    [Route("delete/{id}")]
     public async Task<IActionResult> DeleteTodo(int id)
     {
         var todo = await _context.Todos.FindAsync(id);
+        if (todo == null)
+        {
+            return BadRequest($"{id} bu kimliğe ait bir görev bulunamadı");
+        }
         _context.Todos.Remove(todo);
         var result = await _context.SaveChangesAsync();
         if (result == 1)
         {
-            return Ok("Silindi");
+            return Ok($"{todo.Id} Kullanıcı Kimlikli Görev Silindi");
         }
         else
         {
-            return BadRequest("Silinemedi");
+            return BadRequest($"{todo.Id} Kullanıcı Kimlikli Görev Silinemedi");
         }
     }
 
     [HttpGet]
-    [Route("/update/{id}")]
+    [Route("update/{id}")]
     public async Task<IActionResult> UpdateTodosComplete(int id)
     {
         var todo = await _context.Todos.FindAsync(id);
@@ -78,11 +89,11 @@ public class TodosController : ControllerBase
         var result = await _context.SaveChangesAsync();
         if (result == 1)
         {
-            return Ok("Güncellendi");
+            return Ok($"{todo.Id} Kullanıcı Kimlikli Görev Güncellendi");
         }
         else
         {
-            return BadRequest("Güncellenemedi");
+            return BadRequest($"{todo.Id} Kullanıcı Kimlikli Görev Güncellenemedi");
         }
     }
 

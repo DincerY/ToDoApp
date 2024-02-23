@@ -7,24 +7,9 @@
 
 <h1>Weather forecast</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
-<Toasts class="p-3" Messages="messages" Placement="ToastsPlacement.TopRight" />
-@*<Button Color="ButtonColor.Success" @onclick="() => ShowMessage(ToastType.Success,)">Success Toast</Button>*@
 
 
 @code {
 
 
-    List<ToastMessage> messages = new List<ToastMessage>();
-
-    private void ShowMessage(ToastType toastType,string title,string responseMessage) => messages.Add(CreateToastMessage(toastType,title,responseMessage));
-
-    private ToastMessage CreateToastMessage(ToastType toastType,string title,string responseMessage)
-        => new ToastMessage
-        {
-            Type = toastType,
-            Title = title,
-            HelpText = $"{DateTime.Now}",
-            Message = responseMessage
-        };
 }
